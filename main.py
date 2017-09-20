@@ -1,51 +1,69 @@
-
+import time
 import requests
 import json
+import sys
 
 # Function to check the response received from the API
 def check_response(response):
 	if (response.status_code == 200):
-		print ("Everything went okay")
+		str = "Connected okay"
 	elif (response.status_code == 301):
-		print ("Redirected to a different endpoint")
+		str = "Redirected to a different endpoint"
 	elif (response.status_code == 401):
-		print ("Not authenticated")
+		str = "Not authenticated"
 	elif (response.status_code == 400):
-		print ("Bad request, some data is wrong in the GET")
+		str = "Bad request, some data is wrong in the GET"
 	elif (response.status_code == 403):
-		print ("Forbidden, you have no permissons")
+		str = "Forbidden, you have no permissons"
 	elif (response.status_code == 404):
-		print ("Resource is not found")
+		str = "Resource is not found"
 	else:
-		print ("Google it" , response.status.code)
-	return None
+		sys.exit(1)
+	return str
 
 # Function to print the JSON whether is DICT or STR
-def print_json(json_obj, sort=True, indents=4):
+def print_json(json_obj, sort=False, indents=4):
     if type(json_obj) is str:
         print(json.dumps(json.loads(json_obj), sort_keys=sort, indent=indents))
     else:
         print(json.dumps(json_obj, sort_keys=sort, indent=indents))
     return None
 
+# Kraken wide variables
+kraken_api="https://api.kraken.com/"
+kraken_api_version="0/"
+
 # Public URLs no need for key/secret combination
-kraken_asset_info_url = "https://api.kraken.com/0/public/Assets"
-kraken_server_time_url = "https://api.kraken.com/0/public/Time"
-kraken_tradable_asset_pairs_url = "https://api.kraken.com/0/public/AssetPairs"
-kraken_ticker_info_url = "https://api.kraken.com/0/public/Ticker"
-kraken_ohlc_url = "https://api.kraken.com/0/public/OHLC"
+kraken_asset_info_url = kraken_api+kraken_api_version+"public/Assets"
+kraken_server_time_url = kraken_api+kraken_api_version+"public/Time"
+kraken_tradable_asset_pairs_url = kraken_api+kraken_api_version+"public/AssetPairs"
+kraken_ticker_info_url = kraken_api+kraken_api_version+"public/Ticker"
+kraken_ohlc_url = kraken_api+kraken_api_version+"public/OHLC"
+
+# Params for what we are interested in XXRP, XXBT, XLTC, ZEUR
+
+parameters = {"pair" : "XXRPZEUR"}
+currentMovingAverage = 0
+prices = []
+lastTrade = 0
+
+while True:
+        response = requests.get(kraken_ticker_info_url, params=parameters)
+        check_response(response)
+        data = response.json()
+
+        if (len(prices) > 1):
+                currentMovingAverage = sum(prices) / float(len(prices))
+        
+        lastTrade = float(data['result']['XXRPZEUR']['c'][0])
+        prices.append(lastTrade)
+        print("Kraken - %s - XRP/EUR - last transaction %r | moving average %r" % (check_response(response), lastTrade, currentMovingAverage))
+
+        # could be 10 but don't take any chances
+        time.sleep(14)
 
 
-parameters = {"pair" : "XXBTZEUR, XXBTZUSD"}
-
-response = requests.get(kraken_ticker_info_url, params=parameters)
-
-check_response(response)
-
-
-
-
-#data = response.json()
+#print (dict(data["XXRP"]))
 
 #print_json(data)
 
