@@ -1,7 +1,21 @@
+"""
+Obsolete implementation
+Now using krakenex python lib
+"""
+
 import time
 import requests
 import json
 import sys
+import os
+import time
+
+# Function to load the API key (key+secret)
+def load_key(path):
+        with open(path, 'r') as f:
+                key = f.readline().strip()
+                secret = f.readline().strip()
+        return [key, secret]
 
 # Function to check the response received from the API
 def check_response(response):
@@ -29,6 +43,12 @@ def print_json(json_obj, sort=False, indents=4):
         print(json.dumps(json_obj, sort_keys=sort, indent=indents))
     return None
 
+
+
+# Key loading
+load_key('C:\\Users\\cristian\\work\\repositories\\keys\\laptop_kraken.key')
+
+
 # Kraken wide variables
 kraken_api="https://api.kraken.com/"
 kraken_api_version="0/"
@@ -40,6 +60,8 @@ kraken_tradable_asset_pairs_url = kraken_api+kraken_api_version+"public/AssetPai
 kraken_ticker_info_url = kraken_api+kraken_api_version+"public/Ticker"
 kraken_ohlc_url = kraken_api+kraken_api_version+"public/OHLC"
 
+
+
 # Params for what we are interested in XXRP, XXBT, XLTC, ZEUR
 
 parameters = {"pair" : "XXRPZEUR"}
@@ -47,6 +69,7 @@ currentMovingAverage = 0
 prices = []
 lastTrade = 0
 
+timeout = time.time() + 60*60*24
 while True:
         response = requests.get(kraken_ticker_info_url, params=parameters)
         check_response(response)
@@ -61,6 +84,9 @@ while True:
 
         # could be 10 but don't take any chances
         time.sleep(14)
+		if time.time() > timeout:
+			break
+		
 
 
 #print (dict(data["XXRP"]))
