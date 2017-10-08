@@ -4,7 +4,7 @@ import time
 
 # Variables
 parameters = {"pair" : "XXRPZEUR"}
-currentMovingAverage = 0
+averageTradedSum = 0
 prices = []
 lastTrade = 0
 
@@ -28,7 +28,9 @@ while True:
     data = k.query_public('Ticker',{"pair" : "XXRPZEUR"})
     lastTrade = float(data['result']['XXRPZEUR']['c'][0])
     prices.append(lastTrade)
-    print("Kraken - XRP/EUR - last transaction %r | moving average %r" % (lastTrade, currentMovingAverage))
+    if (len(prices) > 1):
+                averageTradedSum = sum(prices) / float(len(prices))        
+    print("Kraken - XRP/EUR - last transaction %r | moving average %r" % (lastTrade, averageTradedSum))
     time.sleep(14)
     if time.time() > timeout:
         break
